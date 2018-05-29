@@ -42,7 +42,6 @@ with open("metrics.txt") as f:
             data = json.load(d)
 
         bd.calc_delta(data["blocktime"])
-
         data_points.append(bd)
 
 with open("mempool.txt") as m:

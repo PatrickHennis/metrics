@@ -9,5 +9,3 @@ while IFS=',' read -ra ADDR; do
          fi
      done
 done <<< "$memcall"
-
-#/Applications/ZENCashWallet.app/Contents/Java/zen-cli decoderawtransaction $(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $tx)
