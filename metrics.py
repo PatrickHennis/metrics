@@ -45,8 +45,30 @@ with open("metrics.txt") as f:
 
         data_points.append(bd)
 
+with open("mempool.txt") as m:
+    for line in m:
+        text = [x.strip() for x in line.split(',')]
+        txid = text[0]
+        time = text[1]
+
+        url = 'https://explorer.zensystem.io/insight-api-zen/tx/' + txid
+        urllib._urlopener = AppURLopener()
+        urllib._urlopener.retrieve(url, "data.txt")
+
+        with open('data.txt') as d:
+            data = json.load(d)
+
+        amount = data["valueIn"]
+        blocktime = data["blocktime"]
+
+        bd = BlockData(txid, amount, time)
+        bd.calc_delta(blocktime)
+        data_points.append(bd)
+
 
 file = open("data.csv","w")
+
+file.write("transaction id,amount,creation time, inclusion time, time delta")
 
 for a in data_points:
     file.write(a.txid + "," + str(a.amount) + "," + str(a.creation_time) + "," + str(a.inclusion_time) + "," + str(a.time_delta) + "\n")
