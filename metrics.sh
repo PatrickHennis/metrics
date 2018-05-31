@@ -86,6 +86,58 @@ send () { # function to create transactions with multiple inputs
 }
 
 
+write_pool () { # reads mempool.txt and retrieves all data to write to csv, clears mempool.txt after
+  filename="mempool.txt"
+  error="error code: -5"
+  while read -r line
+  do
+      txid="${line:0:64}"
+      creation_time="${line:66}"
+      blocktime="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
+      amounts="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"value\"://p')"
+      search=","
+      amount="${amounts%%$search*}"
+      delta=$((blocktime - $creation_time))
+      string="$txid, $amount, $creation_time, $blocktime, $delta"
+      echo ${string} | grep --quiet "${error}"
+
+      if [ $? = 1 ]; then
+        if [ -n "$amount" ]; then
+          if [ -n "$blocktime" ]; then
+            echo $string >> metrics.csv
+          fi
+        fi
+      fi
+  done < "$filename"
+  > $filename
+}
+
+
+write_send() { # takes the result of send () and writes data to metrics.csv
+  echo "$(python3 metrics.py)"
+  filename="temp.txt"
+  error="error code: -5"
+  while read -r line
+  do
+      txid="${line:0:64}"
+      amount="${line:65:6}"
+      creation_time="${line:72}"
+      blocktime="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
+      delta=$((blocktime - $creation_time))
+      string="$txid, $amount, $creation_time, $blocktime, $delta"
+      echo ${string} | grep --quiet "${error}"
+
+      if [ $? = 1 ]; then
+        if [ -n "$amount" ]; then
+          if [ -n "$blocktime" ]; then
+            echo $string >> metrics.csv
+          fi
+        fi
+      fi
+  done < "$filename"
+  > $filename
+}
+
 
 starthour="$(date +%H)"
 while :
@@ -97,7 +149,7 @@ do
     sleep 1
   else # update time
     # runs hourly
-    echo "$(python3 metrics.py)"
+    write_pool
     send
 
     starthour="$(date +%H)"
