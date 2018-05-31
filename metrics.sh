@@ -145,11 +145,12 @@ do
   if [[ $starthour == $(date +%H) ]]; then # check to see if same hour as when started
     # runs constantly throughout hour
     mempool
+    write_pool
 
     sleep 1
   else # update time
     # runs hourly
-    write_pool
+    write_send
     send
 
     starthour="$(date +%H)"
