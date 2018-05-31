@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mempool () { # function to scrape transactions from mempool
-  memcall="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawmempool)"
+  memcall="$(zen-cli getrawmempool)"
   time="$(date +%s)"
   while IFS=',' read -ra ADDR; do
        for i in "${ADDR[@]}"; do
@@ -93,8 +93,8 @@ write_pool () { # reads mempool.txt and retrieves all data to write to csv, clea
   do
       txid="${line:0:64}"
       creation_time="${line:66}"
-      blocktime="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
-      amounts="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"value\"://p')"
+      blocktime="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
+      amounts="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"value\"://p')"
       search=","
       amount="${amounts%%$search*}"
       delta=$((blocktime - $creation_time))
@@ -122,7 +122,7 @@ write_send() { # takes the result of send () and writes data to metrics.csv
       txid="${line:0:64}"
       amount="${line:65:6}"
       creation_time="${line:72}"
-      blocktime="$(/Applications/ZENCashWallet.app/Contents/Java/zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
+      blocktime="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
       delta=$((blocktime - $creation_time))
       string="$txid, $amount, $creation_time, $blocktime, $delta"
       echo ${string} | grep --quiet "${error}"
@@ -145,12 +145,12 @@ do
   if [[ $starthour == $(date +%H) ]]; then # check to see if same hour as when started
     # runs constantly throughout hour
     mempool
-    write_pool
 
     sleep 1
   else # update time
     # runs hourly
     write_send
+    write_pool
     send
 
     starthour="$(date +%H)"
