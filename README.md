@@ -19,5 +19,10 @@ be set accordingly
 
 the `zen-cli` path may also need to be configured depending on system
 
+## web app
+python runs a flask server serving data from a mongodb
+
 ## requirements
 `python3`
+`flask`
+`pymongo`
