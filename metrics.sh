@@ -89,6 +89,7 @@ send () { # function to create transactions with multiple inputs
 write_pool () { # reads mempool.txt and retrieves all data to write to csv, clears mempool.txt after
   filename="mempool.txt"
   error="error code: -5"
+  write=0
   while read -r line
   do
       txid="${line:0:64}"
@@ -105,11 +106,14 @@ write_pool () { # reads mempool.txt and retrieves all data to write to csv, clea
         if [ -n "$amount" ]; then
           if [ -n "$blocktime" ]; then
             echo $string >> metrics.csv
+            write=1
           fi
         fi
       fi
   done < "$filename"
-  > $filename
+  if [[ $write = 1 ]]; then
+    > $filename
+  fi
 }
 
 
@@ -117,6 +121,7 @@ write_send() { # takes the result of send () and writes data to metrics.csv
   echo "$(python3 metrics.py)"
   filename="temp.txt"
   error="error code: -5"
+  write=0
   while read -r line
   do
       txid="${line:0:64}"
@@ -131,29 +136,44 @@ write_send() { # takes the result of send () and writes data to metrics.csv
         if [ -n "$amount" ]; then
           if [ -n "$blocktime" ]; then
             echo $string >> metrics.csv
+            write=1
           fi
         fi
       fi
   done < "$filename"
-  > $filename
+  if [[ $write = 1 ]]; then
+    > $filename
+  fi
 }
 
+echo "txid,amount,creation_time,inclusion_time,delta" > metrics.csv
 
 starthour="$(date +%H)"
+startmin="$(date +%M)"
 while :
 do
-  if [[ $starthour == $(date +%H) ]]; then # check to see if same hour as when started
+  diff="$((10#$(date +%M) - startmin ))"
+  echo $diff
+  if [[ $diff -lt 0 ]]; then
+    startmin="$(date +%M)"
+  elif [[ $diff -lt 15 ]]; then # check to see if same hour as when started
     # runs constantly throughout hour
     mempool
-
+    echo "mempool"
     sleep 1
-  else # update time
-    # runs hourly
+  elif [[ $starthour != $(date +%H) ]]; then
     write_send
-    write_pool
     send
 
     starthour="$(date +%H)"
+    sleep 1
+    echo "elif"
+  else # update time
+    # runs hourly
+    write_pool
+
+    echo "else"
+    startmin="$(date +%M)"
     sleep 1
   fi
 done
