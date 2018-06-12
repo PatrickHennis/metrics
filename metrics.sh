@@ -159,11 +159,17 @@ write_send() { # takes the result of send () and writes data to metrics.csv
       vout="vout"
       NumberOfMatches=$(echo "$string" | tr " " "\n" | grep -c "$vout")
       num=$(( NumberOfMatches - 1 ))
+      if (( num < 0 )); then
+        num=0
+      fi
 
       outputs="$(zen-cli getrawtransaction $txid 1)"
       n="\"n\":"
       numofoutputs=$(echo "$outputs" | tr " " "\n" | grep -c "$n")
       outnum=$(( numofoutputs - 1 ))
+      if (( outnum < 0 )); then
+        outnum=0
+      fi
 
       string="$txid, $amount, $creation_time, $blocktime, $delta, $num, $outnum"
       echo ${string} | grep --quiet "${error}"
