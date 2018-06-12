@@ -37,20 +37,24 @@
 </head>
 <body>
   <table class="minimalistBlack">
-        <tr>
-            <th>txid</th>
-            <th>amount</th>
-            <th>creation time</th>
-            <th>inclusion time</th>
-            <th>delta</th>
-        </tr>
+      <tr>
+        <th>TXID</th>
+        <th>Amount</th>
+        <th>Creation Time</th>
+        <th>Inclusion Time</th>
+        <th>Time Delta (seconds)</th>
+        <th>Number of Inputs</th>
+        <th>Number of Outputs</th>
+      </tr>
       {% for tx in txs %}
       <tr>
-      <td><a href="https://explorer.zensystem.io/tx/{{tx['txid']}}">{{tx['txid']}}</a></td>
-      <td>{{tx['amount']}}</td>
-      <td>{{tx['creation_time']}}</td>
-      <td>{{tx['inclusion_time']}}</td>
-      <td>{{tx['delta']}}</td>
+        <td><a href="https://explorer.zensystem.io/tx/{{tx['txid']}}">{{tx['txid']}}</a></td>
+        <td>{{tx['amount']}}</td>
+        <td>{{tx['creation_time']}}</td>
+        <td>{{tx['inclusion_time']}}</td>
+        <td>{{tx['delta']}}</td>
+        <td>{{tx['number_inputs']}}</td>
+        <td>{{tx['number_outputs']}}</td>
       </tr>
      {% endfor %}
    </table>
