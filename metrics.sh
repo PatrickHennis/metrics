@@ -92,15 +92,29 @@ write_pool () { # reads mempool.txt and retrieves all data to write to csv, clea
   write=0
   while read -r line
   do
-      txid="${line:0:64}"
-      creation_time="${line:66}"
-      blocktime="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
-      amounts="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"value\"://p')"
-      search=","
-      amount="${amounts%%$search*}"
-      delta=$((blocktime - $creation_time))
-      string="$txid, $amount, $creation_time, $blocktime, $delta"
-      echo ${string} | grep --quiet "${error}"
+    txid="${line:0:64}"
+
+    creation_time="${line:66}"
+    blocktime="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"blocktime\": //p')"
+    delta=$((blocktime - $creation_time))
+
+    amounts="$(zen-cli getrawtransaction $txid 1 | sed -n 's/.*\"value\"://p')"
+    search=","
+    amount="${amounts%%$search*}"
+
+
+    inputs="$(zen-cli getrawtransaction $txid 1)"
+    vout="vout"
+    NumberOfMatches=$(echo "$string" | tr " " "\n" | grep -c "$vout")
+    num=$(( NumberOfMatches - 1 ))
+
+    outputs="$(zen-cli getrawtransaction $txid 1)"
+    n="\"n\":"
+    numofoutputs=$(echo "$outputs" | tr " " "\n" | grep -c "$n")
+    outnum=$(( numofoutputs - 1 ))
+
+    string="$txid, $amount, $creation_time, $blocktime, $delta, $num, $outnum"
+    echo ${string} | grep --quiet "${error}"
 
       if [ $? = 1 ]; then
         if [ -n "$amount" ]; then
